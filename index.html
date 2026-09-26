@@ -3,360 +3,191 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f97316">
-  <title>FoodCart POS</title>
+
+  <title>CHIGASI - Digital Order Pad</title>
 
   <link rel="stylesheet" href="css/style.css">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
-
   <script src="js/storage.js" defer></script>
-  <script src="js/menu.js" defer></script>
-  <script src="js/orders.js" defer></script>
-  <script src="js/sales.js" defer></script>
   <script src="js/app.js" defer></script>
 </head>
 
 <body>
 
-  <main class="app-shell">
+  <main class="app">
 
-    <header class="topbar">
+    <!-- HEADER -->
+    <header class="header">
 
-      <div>
-        <p class="eyebrow">FOOD CART POS</p>
+      <div class="logo">🍔</div>
 
-        <input
-          id="cartName"
-          class="cart-name"
-          placeholder="Enter your cart name"
-          aria-label="Food cart name"
-        >
+      <h1>CHIGASI</h1>
 
-        <p class="muted">
-          Simple ordering for street-food businesses
-        </p>
+      <div class="subtitle">
+        <span>•</span>
+        DIGITAL ORDER PAD
+        <span>•</span>
       </div>
-
-      <span class="status-pill">
-        ● Local & Offline
-      </span>
 
     </header>
 
 
-    <nav class="tabs" aria-label="Main navigation">
+    <!-- NAVIGATION -->
+    <nav class="tabs">
 
       <button class="tab active" data-view="order">
         New Order
       </button>
 
-      <button class="tab" data-view="sales">
-        Sales
+      <button class="tab" data-view="earnings">
+        Earnings
       </button>
 
       <button class="tab" data-view="menu">
         Menu
       </button>
 
-      <button class="tab" data-view="settings">
-        Settings
-      </button>
-
     </nav>
 
 
     <!-- NEW ORDER -->
+    <section id="orderView" class="view active">
 
-    <section id="view-order" class="view active">
+      <label class="label">
+        CUSTOMER NAME
+      </label>
 
-      <div class="section-head">
+      <div class="input-wrapper">
 
-        <div>
-          <h1>New Order</h1>
+        <input
+          type="text"
+          id="customerName"
+          placeholder="e.g. Priya"
+        >
 
-          <p class="muted">
-            Tap items to build the customer's order.
-          </p>
-        </div>
-
-        <button id="clearOrder" class="secondary">
-          Clear
-        </button>
-
-      </div>
-
-
-      <input
-        id="customerName"
-        class="wide-input"
-        placeholder="Customer name (optional)"
-      >
-
-
-      <div id="menuButtons" class="product-grid"></div>
-
-
-      <div id="emptyMenu" class="empty hidden">
-
-        <strong>Your menu is empty.</strong>
-
-        <p>
-          Add your food items from the Menu tab.
-        </p>
-
-        <button class="primary" data-go="menu">
-          Create Menu
-        </button>
+        <button id="clearCustomer">×</button>
 
       </div>
 
 
-      <div class="order-card">
-
-        <div class="section-head compact">
-
-          <h2>Current Order</h2>
-
-          <span id="itemCount" class="badge">
-            0 items
-          </span>
-
-        </div>
+      <!-- FOOD ITEMS -->
+      <div id="foodList" class="food-list"></div>
 
 
-        <div id="cartLines" class="cart-lines"></div>
+      <!-- TOTAL -->
+      <div class="total-box">
+
+        <span>TOTAL</span>
+
+        <strong id="totalAmount">
+          ₹0
+        </strong>
+
+      </div>
 
 
-        <div class="total-row">
-
-          <span>Total</span>
-
-          <strong id="orderTotal">
-            ₹0
-          </strong>
-
-        </div>
-
-
-        <div class="payment-choice">
-
-          <button
-            class="payment active"
-            data-payment="Cash"
-          >
-            Cash
-          </button>
-
-          <button
-            class="payment"
-            data-payment="UPI"
-          >
-            UPI
-          </button>
-
-        </div>
-
+      <!-- PAYMENT -->
+      <div class="payment">
 
         <button
-          id="completeOrder"
-          class="primary full"
-          disabled
+          class="payment-btn active"
+          data-payment="Cash"
         >
-          Complete Order
+          Cash
+        </button>
+
+        <button
+          class="payment-btn"
+          data-payment="UPI"
+        >
+          UPI
         </button>
 
       </div>
 
 
-      <div id="receipt" class="receipt hidden"></div>
+      <button
+        id="completeOrder"
+        class="complete-btn"
+      >
+        Complete Order
+      </button>
 
     </section>
 
 
-    <!-- SALES -->
+    <!-- EARNINGS -->
+    <section id="earningsView" class="view">
 
-    <section id="view-sales" class="view">
+      <div class="page-title">
+        Earnings
+      </div>
 
-      <div class="section-head">
+      <div class="earning-card">
 
-        <div>
+        <span>Today's Earnings</span>
 
-          <h1>Today's Sales</h1>
-
-          <p class="muted">
-            A quick view of your business.
-          </p>
-
-        </div>
+        <strong id="todayEarnings">
+          ₹0
+        </strong>
 
       </div>
 
+      <div class="earning-card">
 
-      <div class="stats">
+        <span>Total Orders</span>
 
-        <div class="stat">
-          <span>Sales</span>
-          <strong id="todaySales">₹0</strong>
-        </div>
-
-        <div class="stat">
-          <span>Orders</span>
-          <strong id="todayOrders">0</strong>
-        </div>
-
-        <div class="stat">
-          <span>Items sold</span>
-          <strong id="todayItems">0</strong>
-        </div>
+        <strong id="todayOrders">
+          0
+        </strong>
 
       </div>
 
-
-      <div class="order-card">
-
-        <h2>Order History</h2>
-
-        <div id="salesList"></div>
-
+      <div class="orders-title">
+        Recent Orders
       </div>
+
+      <div id="ordersList"></div>
 
     </section>
 
 
     <!-- MENU -->
+    <section id="menuView" class="view">
 
-    <section id="view-menu" class="view">
-
-      <div class="section-head">
-
-        <div>
-
-          <h1>My Menu</h1>
-
-          <p class="muted">
-            Add the foods you sell and their prices.
-          </p>
-
-        </div>
-
+      <div class="page-title">
+        Menu
       </div>
 
 
-      <div id="menuList" class="menu-list"></div>
+      <div class="add-item">
 
+        <input
+          id="itemName"
+          type="text"
+          placeholder="Food name"
+        >
 
-      <div class="add-card">
+        <input
+          id="itemPrice"
+          type="number"
+          placeholder="Price"
+        >
 
-        <h2>Add Food Item</h2>
-
-
-        <div class="form-grid">
-
-          <input
-            id="itemName"
-            class="wide-input"
-            placeholder="e.g. Momos"
-          >
-
-          <input
-            id="itemPrice"
-            class="wide-input"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="Price in ₹"
-          >
-
-        </div>
-
-
-        <button id="addItem" class="primary full">
-          Add to Menu
+        <button id="addItem">
+          Add Item
         </button>
 
-
-        <p id="menuMessage" class="message"></p>
-
       </div>
+
+
+      <div id="menuList"></div>
 
     </section>
 
 
-    <!-- SETTINGS -->
-
-    <section id="view-settings" class="view">
-
-      <div class="section-head">
-
-        <div>
-
-          <h1>Settings</h1>
-
-          <p class="muted">
-            Set up your cart once and keep selling.
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="settings-card">
-
-        <label>
-          Food Cart Name
-        </label>
-
-        <input
-          id="settingsCartName"
-          class="wide-input"
-          placeholder="Your cart name"
-        >
-
-
-        <label>
-          UPI ID
-        </label>
-
-        <input
-          id="upiId"
-          class="wide-input"
-          placeholder="yourname@upi"
-        >
-
-
-        <button
-          id="saveSettings"
-          class="primary full"
-        >
-          Save Settings
-        </button>
-
-
-        <p id="settingsMessage" class="message"></p>
-
-      </div>
-
-
-      <div class="settings-card danger-card">
-
-        <h2>Reset Demo Data</h2>
-
-        <p class="muted">
-          Deletes menu items, orders, cart name and UPI ID from this browser.
-        </p>
-
-        <button
-          id="resetData"
-          class="danger full"
-        >
-          Reset Everything
-        </button>
-
-      </div>
-
-    </section>
+    <!-- MESSAGE -->
+    <div id="message" class="message"></div>
 
   </main>
 
