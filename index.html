@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CartMate - Digital Order Pad</title>
+
+    <!-- PWA & Mobile Icons -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CartMate">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Fonts & QR Code Library -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+    <!-- BACKGROUND CANVAS & GLOW EFFECTS -->
+    <div class="bg-canvas">
+        <div class="bg-blob bg-blob-1"></div>
+        <div class="bg-blob bg-blob-2"></div>
+        <div class="bg-blob bg-blob-3"></div>
+        <div class="light-beam light-beam-1"></div>
+        <div class="light-beam light-beam-2"></div>
+    </div>
+
+    <!-- MAIN APP TICKET -->
+    <main class="pad">
+        <section class="ticket">
+
+            <!-- THEME TOGGLE (DARK / DAY MODE) -->
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to day mode" title="Switch to day mode">
+                ☀️
+            </button>
+
+            <!-- HERO EMBLEM -->
+            <div class="hero">
+                <svg viewBox="0 0 100 74" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 30 C8 14,22 4,50 4 C78 4,92 14,92 30 Z" fill="#f59e0b" />
+                    <path d="M14 26 C14 16,26 10,50 10 C74 10,86 16,86 26" fill="none" stroke="#b45309" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="1 6" />
+                    <rect x="8" y="32" width="84" height="7" rx="3.5" fill="#10b981" />
+                    <rect x="6" y="40" width="88" height="10" rx="4" fill="#ef4444" />
+                    <rect x="8" y="51" width="84" height="8" rx="3" fill="#f59e0b" />
+                    <path d="M6 60 C6 58,8 57,12 57 L88 57 C92 57,94 58,94 60 C94 68,78 70,50 70 C22 70,6 68,6 60 Z" fill="#334155" />
+                </svg>
+            </div>
+
+            <!-- SHOP NAME -->
+            <div class="shop-name-row">
+                <input id="shopName" value="CARTMATE" spellcheck="false" aria-label="Shop name">
+            </div>
+
+            <p class="subtitle">Digital Order Pad</p>
+
+            <!-- TABS NAVIGATION -->
+            <nav class="tabs">
+                <button class="tab-btn active" data-tab="order" type="button">New Order</button>
+                <button class="tab-btn" data-tab="earnings" type="button">Earnings</button>
+                <button class="tab-btn" data-tab="menu" type="button">Menu</button>
+            </nav>
+
+            <!-- =================================================
+                 VIEW 1: ORDER VIEW
+                 ================================================= -->
+            <section class="view active" id="view-order">
+
+                <!-- EMPTY MENU STATE -->
+                <div class="empty-state" id="order-empty" style="display:none;">
+                    <div class="empty-icon">🍔</div>
+                    <h3>Your menu is empty</h3>
+                    <p>Add food items to your menu before taking an order.</p>
+                    <button class="text-button" id="go-to-menu-link" type="button">Go to Menu →</button>
+                </div>
+
+                <!-- ORDER PAD CONTENT -->
+                <div id="order-content" style="display:none;">
+                    <label class="field-label" for="customerName">Customer Name</label>
+                    <div class="input-with-clear">
+                        <input class="customer-input" id="customerName" type="text" placeholder="e.g. Priya" autocomplete="off">
+                        <button class="clear-btn" id="clearCustomerBtn" type="button" aria-label="Clear customer name">×</button>
+                    </div>
+
+                    <div id="order-items"></div>
+
+                    <div class="total-row">
+                        <span class="total-label">Total</span>
+                        <span class="total-amount" id="orderTotal">₹0</span>
+                    </div>
+
+                    <div class="actions-row">
+                        <button class="primary" id="completeOrderBtn" type="button" disabled>Complete Order</button>
+                    </div>
+                </div>
+
+                <!-- RECEIPT / ORDER COMPLETE -->
+                <div id="receipt-view" style="display:none;">
+                    <div class="receipt-box">
+                        <div class="success-icon">✓</div>
+                        <h2 id="receiptName">Order Complete</h2>
+                        <p class="receipt-time" id="receiptWhen"></p>
+
+                        <div class="receipt-lines" id="receiptLines"></div>
+
+                        <div class="total-row">
+                            <span class="total-label">Total</span>
+                            <span class="total-amount" id="receiptTotal">₹0</span>
+                        </div>
+
+                        <!-- QR SWITCH TABS -->
+                        <div class="qr-tabs" id="receiptQrTabs" style="display:none;">
+                            <button type="button" class="qr-tab-btn active" id="tabUpiQrBtn" data-qr="upi">
+                                💳 Pay UPI
+                            </button>
+                            <button type="button" class="qr-tab-btn" id="tabEBillQrBtn" data-qr="ebill">
+                                📲 E-Bill QR
+                            </button>
+                        </div>
+
+                        <!-- UPI PAYMENT QR -->
+                        <div id="qr-block" style="display:none;">
+                            <div class="qr-wrap">
+                                <div id="qrcode"></div>
+                            </div>
+                            <p class="qr-caption">Scan to pay with any UPI app</p>
+                        </div>
+
+                        <!-- CUSTOMER SCAN E-BILL QR -->
+                        <div id="ebill-qr-block" style="display:none;">
+                            <div class="qr-wrap">
+                                <div id="ebillQrcode"></div>
+                            </div>
+                            <p class="qr-caption">📲 Customer: Scan with phone camera for bill</p>
+                        </div>
+
+                        <p class="hint-text" id="qr-missing-hint" style="display:none;">
+                            Add your UPI ID from the Menu tab to generate a payment QR.
+                        </p>
+                    </div>
+
+                    <div class="actions-row receipt-actions">
+                        <!-- 1-TAP PRINT SLIP BUTTON -->
+                        <button class="print-slip-btn" id="printSlipBtn" type="button" style="display:none;">
+                            🖨️ Print Receipt Slip
+                        </button>
+
+                        <!-- WHATSAPP SHARE BLOCK -->
+                        <div id="whatsapp-share-block" style="display:none; width: 100%;">
+                            <div class="input-with-clear" style="margin-bottom: 8px;">
+                                <input class="customer-input" id="whatsappPhone" type="tel" placeholder="Customer WhatsApp (optional)" maxlength="10" style="min-height: 40px; font-size: 12px;">
+                            </div>
+                            <button class="whatsapp-btn" id="shareWhatsAppBtn" type="button">
+                                <span>💬</span> Send Bill on WhatsApp
+                            </button>
+                        </div>
+
+                        <!-- START NEXT ORDER -->
+                        <button class="primary" id="newOrderBtn" type="button">
+                            Start Next Order
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RECENT ORDERS / HISTORY -->
+                <section class="history-section" id="history-section" style="display:none;">
+                    <div class="history-header">
+                        <div>
+                            <h3>Recent Orders</h3>
+                            <p>Today's orders</p>
+                        </div>
+                        <button class="clear-history-btn" id="clearTodayOrdersBtn" type="button">Clear</button>
+                    </div>
+                    <div id="history-list"></div>
+                </section>
+            </section>
+
+            <!-- =================================================
+                 VIEW 2: EARNINGS VIEW
+                 ================================================= -->
+            <section class="view" id="view-earnings">
+                <div class="earnings-intro">
+                    <h2>Earnings</h2>
+                    <p>Track your sales and orders across different periods.</p>
+                </div>
+
+                <div class="earnings-grid">
+                    <button class="earnings-card active-card" data-period="today" type="button">
+                        <span class="earnings-label">Today</span>
+                        <strong class="earnings-amount" id="stat-today-amount">₹0</strong>
+                        <span class="earnings-count" id="stat-today-cust">0 customers</span>
+                        <span class="earnings-count" id="stat-today-items">0 items sold</span>
+                    </button>
+
+                    <button class="earnings-card" data-period="week" type="button">
+                        <span class="earnings-label">This Week</span>
+                        <strong class="earnings-amount" id="stat-week-amount">₹0</strong>
+                        <span class="earnings-count" id="stat-week-cust">0 customers</span>
+                        <span class="earnings-count" id="stat-week-items">0 items sold</span>
+                    </button>
+
+                    <button class="earnings-card" data-period="month" type="button">
+                        <span class="earnings-label">This Month</span>
+                        <strong class="earnings-amount" id="stat-month-amount">₹0</strong>
+                        <span class="earnings-count" id="stat-month-cust">0 customers</span>
+                        <span class="earnings-count" id="stat-month-items">0 items sold</span>
+                    </button>
+
+                    <button class="earnings-card" data-period="year" type="button">
+                        <span class="earnings-label">This Year</span>
+                        <strong class="earnings-amount" id="stat-year-amount">₹0</strong>
+                        <span class="earnings-count" id="stat-year-cust">0 customers</span>
+                        <span class="earnings-count" id="stat-year-items">0 items sold</span>
+                    </button>
+                </div>
+
+                <div class="earnings-breakdown">
+                    <h3 id="breakdown-title">Today's Orders</h3>
+                    <div id="earnings-list"></div>
+
+                    <!-- EXPORT SALES REPORT -->
+                    <button class="secondary-btn" id="exportSalesBtn" type="button">
+                        📥 Export Sales Report (.csv)
+                    </button>
+                </div>
+            </section>
+
+            <!-- =================================================
+                 VIEW 3: MENU VIEW (SETTINGS & PRODUCTS)
+                 ================================================= -->
+            <section class="view" id="view-menu">
+                <!-- UPI SETTING -->
+                <div class="settings-card">
+                    <label class="field-label" for="upiId">UPI ID</label>
+                    <input class="customer-input" id="upiId" type="text" placeholder="yourname@upi" autocomplete="off">
+                    <p class="hint-text">Your UPI ID is used to generate payment QR codes.</p>
+                </div>
+
+                <!-- ORDER SOUND ALERT -->
+                <div class="settings-card audio-setting-card">
+                    <div class="setting-row">
+                        <div>
+                            <span class="field-label" style="margin-bottom: 2px;">Order Sound Alert</span>
+                            <p class="hint-text" style="margin: 0;">Play chime sound when an order completes</p>
+                        </div>
+                        <button type="button" id="soundToggleBtn" class="toggle-pill active" aria-label="Toggle order sound">
+                            ON 🔔
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BILLING & RECEIPT PREFERENCES -->
+                <div class="settings-card">
+                    <span class="field-label" style="margin-bottom: 4px;">Receipt & Bill Sharing Mode</span>
+                    <p class="hint-text" style="margin: 0 0 14px;">Choose which options to offer when an order completes:</p>
+
+                    <label class="setting-toggle-row">
+                        <div class="setting-info">
+                            <span class="setting-title">📲 Customer E-Bill QR Code</span>
+                            <span class="setting-desc">Customer scans with camera to view bill on their phone (No number needed)</span>
+                        </div>
+                        <input type="checkbox" id="prefScanBill" class="pref-checkbox" checked>
+                    </label>
+
+                    <label class="setting-toggle-row">
+                        <div class="setting-info">
+                            <span class="setting-title">🖨️ 1-Tap Print Slip</span>
+                            <span class="setting-desc">Print compact paper receipt for 58mm thermal printers</span>
+                        </div>
+                        <input type="checkbox" id="prefPrintSlip" class="pref-checkbox" checked>
+                    </label>
+
+                    <label class="setting-toggle-row">
+                        <div class="setting-info">
+                            <span class="setting-title">💬 WhatsApp Bill Sharing</span>
+                            <span class="setting-desc">Send digital bill directly to customer on WhatsApp</span>
+                        </div>
+                        <input type="checkbox" id="prefWhatsApp" class="pref-checkbox" checked>
+                    </label>
+                </div>
+
+                <!-- MENU ITEMS MANAGEMENT -->
+                <div class="menu-heading">
+                    <div>
+                        <h2>Menu Items</h2>
+                        <p>Add the food you sell.</p>
+                    </div>
+                </div>
+
+                <div id="menu-empty" class="empty-state" style="display:none;">
+                    <div class="empty-icon">🍽️</div>
+                    <h3>No menu items</h3>
+                    <p>Add your first food item below.</p>
+                </div>
+
+                <div id="menu-list"></div>
+
+                <!-- ADD ITEM FORM -->
+                <div class="add-form">
+                    <input class="name-input" id="newItemName" type="text" placeholder="Item name">
+                    <input class="price-input" id="newItemPrice" type="number" min="0" step="0.01" placeholder="₹ Price">
+                </div>
+
+                <div class="actions-row">
+                    <button class="primary" id="addItemBtn" type="button">Add to Menu</button>
+                </div>
+
+                <p class="status-msg" id="menuStatus"></p>
+            </section>
+
+        </section>
+    </main>
+
+    <!-- SEGREGATED JAVASCRIPT MODULES -->
+    <script src="js/storage.js"></script>
+    <script src="js/sound.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/payment.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/earnings.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>
